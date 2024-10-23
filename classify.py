@@ -35,7 +35,7 @@ def main():
     parser.add_argument('--videosrc', help='Which video source to use. ',
                         default='/dev/video0')
     parser.add_argument('--headless', help='Run without displaying the video.',
-                        default=False, type=bool)
+                        default=True, type=bool)
     parser.add_argument('--videofmt', help='Input video format.',
                         default='raw',
                         choices=['raw', 'h264', 'jpeg'])
