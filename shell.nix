@@ -1,11 +1,7 @@
-{ pkgs ? import <nixpkgs> {} }:
+{ pkgs ? import <nixpkgs> {}, libedgetpu ? pkgs.callPackage /etc/nixos/laptop/libedgetpu/libedgetpu.nix {} }:
 
 pkgs.mkShell {
   buildInputs = with pkgs; [
-    (python39.withPackages (ps: [ps.pip]))
-    python39Packages.numpy
-    python39Packages.gst-python
-    python39Packages.pygobject3
     stdenv.cc.cc.lib   # need libstdc++.so.6
     protobuf
     gst_all_1.gstreamer
@@ -16,9 +12,20 @@ pkgs.mkShell {
     gst_all_1.gst-libav
     gst_all_1.gst-vaapi
     gtk3
-    ];
-    shellHook = ''
-        export "LD_LIBRARY_PATH=/nix/store/zjmfnryzhs5rw2zsc0f0dppvg504d121-libedgetpu-grouper/lib:${pkgs.stdenv.cc.cc.lib}/lib:$LD_LIBRARY_PATH"
-        source .venv/bin/activate
-    '';
+    labelImg
+    ninja
+    libglvnd
+    pkg-config
+    cmake
+    gobject-introspection
+    libedgetpu
+    edgetpu-compiler
+  ];
+
+  shellHook = ''
+    export LD_LIBRARY_PATH=${libedgetpu}/lib:${pkgs.glib}/lib:${pkgs.libGL}/lib/:${pkgs.stdenv.cc.cc.lib}/lib:$(nix eval nixpkgs#zlib.outPath --raw)/lib:$LD_LIBRARY_PATH;
+    export QT_QPA_PLATFORM=xcb;
+    source .venv/bin/activate;
+  '';
 }
+
