@@ -11,7 +11,9 @@ pkgs.mkShell {
     gst_all_1.gst-plugins-ugly
     gst_all_1.gst-libav
     gst_all_1.gst-vaapi
+    gst_all_1.gst-plugins-rs
     gtk3
+    gtk4
     labelImg
     ninja
     libglvnd
