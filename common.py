@@ -152,7 +152,7 @@ class GstPipeline:
 
             # Passing Gst.Buffer as input tensor avoids 2 copies of it.
             gstbuffer = gstsample.get_buffer()
-            svg = self.user_function(gstbuffer, self.src_size, self.get_box())
+            svg = self.user_function(gstbuffer, self.src_size)
             if svg:
                 if self.overlay:
                     self.overlay.set_property('data', svg)
@@ -233,7 +233,7 @@ def get_dev_board_model():
 def run_pipeline(user_function,
                  src_size,
                  appsink_size,
-                 videosrc='/dev/video1',
+                 videosrc='/dev/video0',
                  videofmt='raw',
                  headless=False):
     if videofmt == 'h264':
