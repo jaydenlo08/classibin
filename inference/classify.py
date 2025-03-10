@@ -4,14 +4,13 @@ enable_gpio = True
 import cv2
 import os
 import sys
-import time
-from PIL import Image  
+from motor import turnServo, turnStepper, sortPos
+from PIL import Image
 from pycoral.adapters.common import input_size
 from pycoral.adapters.classify import get_classes
 from pycoral.utils.dataset import read_label_file
 from pycoral.utils.edgetpu import make_interpreter
 from pycoral.utils.edgetpu import run_inference
-if enable_gpio == True: import RPi.GPIO as GPIO
     
 def main():
     # Define constants
@@ -20,29 +19,18 @@ def main():
     model_labels = 'recycle.txt'
     camera_idx = 0 # As in /dev/videoX
     inference_threshold = 80 # Threshold, in %
-    servo_pin = 14 # GPIO pin number
-    move_delay = 1 # Delay after action, in seconds
     
     # Initialise GPIO
     if enable_gpio == True:
-        GPIO.setwarnings(False)
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(servo_pin, GPIO.OUT)
-        servo = GPIO.PWM(servo_pin, 50)
-        servo.start(0)
-        def turn(angle):
-            duty = 2.5*(1+(angle/45))
-            servo.ChangeDutyCycle(duty)
-            time.sleep(0.5)
-            servo.ChangeDutyCycle(0)
-            time.sleep(move_delay)
-    
+        pass
+        
     # Prepare model
     print(f'===== {model_file} =====')
     interpreter = make_interpreter(os.path.join(model_dir,model_file))
     interpreter.allocate_tensors()
     labels = read_label_file(os.path.join(model_dir,model_labels))
     inference_size = input_size(interpreter)
+    turnServo(90)
     
     # Prepare camera
     camera = cv2.VideoCapture(camera_idx)
@@ -60,7 +48,7 @@ def main():
         cv2_im_rgb = cv2.resize(cv2_im_rgb, inference_size)
         
         # Run inference
-        run_inference(interpreter, cv2_im_rgb.tobytes()) #TODO
+        run_inference(interpreter, cv2_im_rgb.tobytes())
         results = get_classes(interpreter, 1, inference_threshold/100)
         
         # Process results
@@ -85,16 +73,19 @@ def main():
         
         # Action
         if (enable_gpio == True) and (previous_object_name != object_name):
-            if object_name == "paper":
-                turn(45)
-            if object_name == "plastic":
-                turn(135)
-            if object_name == "metal":
-                pass
-            if object_name == "rubbish":
-                pass
-            if object_name == "none":
-                turn(90)
+            if result == True:
+                if object_name == "paper":
+                    sortPos(1)
+                if object_name == "plastic":
+                    sortPos(2)
+                if object_name == "metal":
+                    sortPos(3)
+                if object_name == "rubbish":
+                    sortPos(4)
+                if object_name == "cardboard":
+                    pass
+                else:
+                    sortPos(4)
             previous_object_name = object_name
             
             
